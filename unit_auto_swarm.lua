@@ -13,6 +13,7 @@ end
 
 local team = Spring.GetMyTeamID()
 local raider = {}
+local CMD_SWARM = 38000
 
 ----SPEEDUPS
 
@@ -88,9 +89,9 @@ function widget:GameFrame(n)
 end
 
 function checkRaiders()
-  for unit, v in pairs(raider) do
 
-	local cQueue = spGetCommandQueue(unit)
+  for unit, v in pairs(raider) do
+	local cQueue = spGetCommandQueue(unit,2)
 	local enemy,move = getAttack(unit,v,cQueue) 
   
     if enemy then
@@ -160,7 +161,7 @@ end
 
 function getAttack(unit,v,cQueue)
 
-  if (#cQueue == 0) then
+  if cQueue and (#cQueue == 0) then
 	return false
   else
     
@@ -202,6 +203,13 @@ end
 local unitSet = {}
 
 function widget:Initialize() 
+  local playerID = Spring.GetMyPlayerID()
+  local _, _, spec, _, _, _, _, _ = Spring.GetPlayerInfo(playerID)
+		
+  if ( spec == true ) then
+    widgetHandler:RemoveWidget()
+  end
+
   for i, v in pairs(unitArray) do
     unitSet[v] = true
   end
@@ -224,9 +232,8 @@ function widget:UnitCreated(unitID, unitDefID, unitTeam)
   if (unitTeam == team) then
 	
 	local ud = UnitDefs[unitDefID]
-  
     if ( (ud ~= nil) and ( IsInUnitArray(ud)) ) then
-    
+
 	  raider[unitID] = {range = ud.maxWeaponRange-leeway, cx = 0, cy = 0, cz = 0,dir = jinkVariation, rot = random(0,1)*2-1}
 	  
     end
